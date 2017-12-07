@@ -17,10 +17,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
-  sendToContentScript({
-    action: request.action,
-    data: request.data
-  });
+  sendToContentScript(request);
 });
 
 function sendToContentScript(message) {

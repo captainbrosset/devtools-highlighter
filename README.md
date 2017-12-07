@@ -12,3 +12,4 @@ tbd...
 * Click to scroll into view from the list of results
 * Limit to N results by default to avoid long running requests
 * Click to inspect() in inspector panel
+* Verify the tabId filtering thing (multiple devtools instances, multiple pages ...)
