@@ -3,7 +3,6 @@
 // Waiting for a connection from the content script and storing the port.
 let contentScriptPort;
 browser.runtime.onConnect.addListener(port => {
-  console.log("content script connection?")
   contentScriptPort = port;
   contentScriptPort.onMessage.addListener(message => {
     message.tabId = contentScriptPort.sender.tab.id;

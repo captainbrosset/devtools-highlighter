@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="style.css">
-<label>Selector <input type="text" id="selector"></label>
-<label>Search type
-  <select id="type">
-    <option value="selector" selected>CSS Selector</option>
-    <option value="computed">CSS Computed Style</option>
-  </select>
-</label>
-<label><input type="checkbox" id="unlimited"> Unlimited (at most 100 elements are matched by default)</label>
-<div id="message"></div>
+<div class="toolbar">
+  <input type="text" id="query" placeholder="Search query">
+  <span class="count"></span>
+  <label>Type
+    <select id="type">
+      <option value="selector" selected>CSS Selector</option>
+      <option value="computed">CSS Computed Style</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="unlimited"> Unlimited results</label>
+</div>
+<div class="output">
+  <div id="message"></div>
+  <ul id="nodes"></ul>
+</div>
 <script src="devtools-panel.js"></script>

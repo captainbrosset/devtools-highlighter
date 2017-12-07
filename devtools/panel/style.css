@@ -1,3 +1,136 @@
+:root {
+  --item-height: 30px;
+  --theme-toolbar-background: #f9f9fa;
+  --theme-splitter-color: #e0e0e1;
+  --theme-highlight-blue: #0074e8;
+  --theme-highlight-red: #dd00a9;
+  --theme-highlight-purple: #003eaa;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font: message-box;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  grid-template-rows: var(--item-height) 1fr;
+}
+
+.toolbar {
+  background: var(--theme-toolbar-background);
+  border-block-end: 1px solid var(--theme-splitter-color);
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  position: relative;
+}
+
+.toolbar input {
+  border: none;
+  background: transparent;
+}
+
+.toolbar label, .toolbar input {
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar select {
+  margin: 0 2px;
+}
+
+.toolbar .count {
+  position: absolute;
+  font-weight: bold;
+  color: #666;
+  grid-column: 1 / 2;
+  width: 100%;
+  height: 100%;
+  justify-content: end;
+  align-items: center;
+  display: flex;
+  right: 0.5em;
+  pointer-events: none;
+}
+
+.output {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.output:not(.has-nodes) {
+  justify-self: center;
+  align-self: center;
+}
+
 #message[data-type=error] {
   color: red;
+}
+
+.output:not(.has-nodes) #nodes {
+  display: none;
+}
+.output.has-nodes #message {
+  display: none;
+}
+
+#nodes, #nodes li {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#nodes li {
+  height: var(--item-height);
+  border-block-end: 1px solid var(--theme-splitter-color);
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  overflow: hidden;
+}
+
+#nodes li:hover {
+  background-color: #0002;
+}
+
+#nodes li:last-child {
+  border: none;
+}
+
+#nodes .preview {
+  flex: 1;
+}
+
+#nodes .preview .node-name {
+  color: var(--theme-highlight-blue);
+}
+
+#nodes .preview .node-name:not(:last-child),
+#nodes .preview .attribute:not(:last-child) {
+  margin-inline-end: .5em;
+}
+
+#nodes .preview .attribute .name {
+  color: var(--theme-highlight-red);
+}
+#nodes .preview .attribute .value {
+  color: var(--theme-highlight-purple);
+}
+
+#nodes button {
+  display: block;
+  background: none;
+  cursor: pointer;
+  border: 0;
+  text-decoration: underline;
+  color: #f06;
+}
+
+#nodes button.select {
+  display: none;
 }

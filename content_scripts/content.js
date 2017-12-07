@@ -8,13 +8,27 @@ const port = browser.runtime.connect({ name: "cs-port" });
 
 // Handle background script messages.
 port.onMessage.addListener(message => {
-  if (message.action === "highlight") {
-    highlight(message);
+  switch (message.action) {
+    case "findAndHighlight":
+      findAndHighlight(message);
+      break;
+    case "highlightOne":
+      highlightOne(message.index);
+      break;
+    case "highlightAll":
+      reHighlightAll();
+      break;
+    case "inspectOne":
+      inspectOne(message.index);
+      break;
+    case "scrollIntoView":
+      scrollIntoView(message.index);
+      break;
   }
 });
 
 // Helper to send messages back to the background script.
-function sendFeedback(message) {
+function sendResponse(message) {
   port.postMessage(message);
 }
 
@@ -25,22 +39,53 @@ function unhighlightAll() {
   for (let node of currentlyHighlighted) {
     unhighlightNode(node);
   }
-  currentlyHighlighted = [];
 }
 
-function highlight({ type, query, options }) {
+function highlightOne(index) {
+  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
+    return;
+  }
+
   unhighlightAll();
+  highlightNode(currentlyHighlighted[index]);
+}
+
+function reHighlightAll() {
+  for (let node of currentlyHighlighted) {
+    highlightNode(node);
+  }
+}
+
+function inspectOne(index) {
+  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
+    return;
+  }
+
+  // TODO: find a way to make this work.
+}
+
+function scrollIntoView(index) {
+  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
+    return;
+  }
+
+  currentlyHighlighted[index].scrollIntoView({ behavior: "smooth" });
+}
+
+function findAndHighlight({ type, query, options }) {
+  unhighlightAll();
+  currentlyHighlighted = [];
 
   let nodes = [];
   let error = null;
 
   switch (type) {
     case "computed":
-      ({ nodes, error } = matchNodesFromComputedStyle(query));
+      ({ nodes, error } = findNodesFromComputedStyle(query));
       break;
     case "selector":
     default:
-      ({ nodes, error } = matchNodesFromSelector(query));
+      ({ nodes, error } = findNodesFromSelector(query));
       break;
   }
 
@@ -54,23 +99,28 @@ function highlight({ type, query, options }) {
   }
 
   let responseType = error ? "error" : "ok";
-  let responseMessage = error
-                        ? `Query failed ${error}`
-                        : `Matched ${nodes.length} elements on the page`;
 
-  sendFeedback({
+  sendResponse({
     type: responseType,
-    message: responseMessage,
+    nodes: nodes.map(createNodeResponse),
+    error: error ? `Query failed ${error}` : null
   })
 }
 
-function matchNodesFromComputedStyle(query) {
+function findNodesFromComputedStyle(query) {
+  let match = query.match(/[^:]+:[^:]+/);
+  if (!match || match[0] !== query) {
+    return { nodes: [], error: "Invalid query" };
+  }
+
   let [name, value] = query.split(":");
   let nodes = [];
 
   for (let node of [...document.getElementsByTagName("*")]) {
     let style = window.getComputedStyle(node);
-    if (style[name] == value) {
+    if (value.startsWith("!") && style[name] != value.substring(1)) {
+      nodes.push(node);
+    } else if (style[name] == value) {
       nodes.push(node);
     }
   }
@@ -78,7 +128,7 @@ function matchNodesFromComputedStyle(query) {
   return { nodes };
 }
 
-function matchNodesFromSelector(query) {
+function findNodesFromSelector(query) {
   let nodes = [];
   let error;
 
@@ -97,4 +147,13 @@ function highlightNode(node) {
 
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
+}
+
+function createNodeResponse(node) {
+  return {
+    nodeName: node.nodeName,
+    attributes: [...node.attributes]
+                .filter(({ name }) => name !== STYLING_ATTRIBUTE)
+                .map(({ name, value }) => ({ name, value }))
+  }
 }
