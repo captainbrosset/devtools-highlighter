@@ -1,7 +1,7 @@
 {
   "description": "Element finder and highlighter DevTools panel",
   "manifest_version": 2,
-  "name": "devtools-panels",
+  "name": "devtools-highlighter",
   "version": "1.0",
   "author": "Patrick Brosset",
   "homepage_url": "https://github.com/captainbrosset/devtools-highlighter",

@@ -22,7 +22,7 @@ The panel has only been tested in Firefox although, in theory, it should also wo
 * Add a clear icon to clear the current search and remove the highlighter.
 * Auto-remove all highlighters on close/reload.
 * Write some usage and contribution docs.
-* Publish to AMO.
+* Support the dark theme.
 
 # License
 
