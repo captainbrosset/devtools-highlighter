@@ -23,3 +23,7 @@ The panel has only been tested in Firefox although, in theory, it should also wo
 * Auto-remove all highlighters on close/reload.
 * Write some usage and contribution docs.
 * Publish to AMO.
+
+# License
+
+[MPL 2](./LICENSE)
