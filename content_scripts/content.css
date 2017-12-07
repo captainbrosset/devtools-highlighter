@@ -1,0 +1,14 @@
+[__devtools_highlighted] {
+  outline: 1px solid #f06;
+  position: relative;
+}
+
+[__devtools_highlighted]::before {
+  position: absolute;
+  content: "";
+  background: #0006;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
