@@ -71,10 +71,12 @@ function displayNodes(nodes) {
 
     appendNodePreview(node, nodeEl);
 
-    let scrollButtonEl = document.createElement("button");
-    scrollButtonEl.classList.add("scroll");
-    scrollButtonEl.textContent = "scroll to";
-    nodeEl.appendChild(scrollButtonEl);
+    if (!node.isHidden) {
+      let scrollButtonEl = document.createElement("button");
+      scrollButtonEl.classList.add("scroll");
+      scrollButtonEl.textContent = "scroll to";
+      nodeEl.appendChild(scrollButtonEl);
+    }
 
     let selectButtonEl = document.createElement("button");
     selectButtonEl.classList.add("select");
@@ -85,9 +87,12 @@ function displayNodes(nodes) {
   });
 }
 
-function appendNodePreview({ nodeName, attributes }, parentEl) {
+function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
   let previewEl = document.createElement("span");
   previewEl.classList.add("preview");
+  if (isHidden) {
+    previewEl.classList.add("hidden");
+  }
   previewEl.appendChild(document.createTextNode("<"));
 
   let nameEl = document.createElement("span");
@@ -178,7 +183,7 @@ function handleButtonClick({ target }) {
 var wasOver = false;
 function handleNodeOver({ target }) {
   let nodeEl = target.closest("#nodes li");
-  if (!nodeEl) {
+  if (!nodeEl || nodeEl.querySelector(".preview.hidden")) {
     return;
   }
 

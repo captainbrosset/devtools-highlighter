@@ -158,6 +158,7 @@ function createNodeResponse(node) {
     nodeName: node.nodeName,
     attributes: [...node.attributes]
                 .filter(({ name }) => name !== STYLING_ATTRIBUTE)
-                .map(({ name, value }) => ({ name, value }))
+                .map(({ name, value }) => ({ name, value })),
+    isHidden: !node.getBoxQuads || !node.getBoxQuads().length
   }
 }

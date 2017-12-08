@@ -110,6 +110,10 @@ body {
   flex: 1;
 }
 
+#nodes .preview.hidden {
+  opacity: .6;
+}
+
 #nodes .preview .node-name {
   color: var(--theme-highlight-blue);
 }
