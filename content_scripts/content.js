@@ -111,22 +111,50 @@ function findAndHighlight({ type, query, options }) {
   })
 }
 
-function findNodesFromComputedStyle(query) {
+function parseComputedStyleQuery(query) {
   let match = query.match(/[^:]+:[^:]+/);
   if (!match || match[0] !== query) {
-    return { nodes: [], error: "Invalid query" };
+    return null;
   }
 
   let [name, value] = query.split(":");
+  name = name.trim();
+  value = value.trim();
+
+  if (value == "!") {
+    return null;
+  }
+
+  return { name, value };
+}
+
+function findNodesFromComputedStyle(query) {
+  let parsed = parseComputedStyleQuery(query);
+  if (!parsed) {
+    return { nodes: [], error: "Invalid query" };
+  }
+
+  let { name, value } = parsed;
   let nodes = [];
 
-  for (let node of [...document.getElementsByTagName("*")]) {
-    let style = window.getComputedStyle(node);
-    if (value.startsWith("!") && style[name] != value.substring(1)) {
-      nodes.push(node);
-    } else if (style[name] == value) {
-      nodes.push(node);
+  const filter = {
+    acceptNode: node => {
+      let style = window.getComputedStyle(node);
+      if (value.startsWith("!") && style[name] != value.substring(1)) {
+        return NodeFilter.FILTER_ACCEPT;
+      } else if (style[name] == value) {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+      return NodeFilter.FILTER_SKIP;
     }
+  };
+
+  const walker = document.createTreeWalker(document.documentElement,
+                                           NodeFilter.SHOW_ELEMENT,
+                                           filter);
+
+  while (walker.nextNode()) {
+    nodes.push(walker.currentNode);
   }
 
   return { nodes };
