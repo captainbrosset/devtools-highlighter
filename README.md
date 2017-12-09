@@ -61,6 +61,10 @@ That's it! You should now see your changes.
 
 Simply open [a pull request](https://help.github.com/articles/creating-a-pull-request/) and I'll try to review it quickly.
 
+# Getting in touch
+
+The best place to chat about this extension is on the [DevTools Slack](https://devtools-html-slack.herokuapp.com/), in the #addons channel. Ping @pbro.
+
 # License
 
 [MPL 2](./LICENSE)
