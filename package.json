@@ -1,0 +1,15 @@
+{
+  "name": "devtools-highlighter",
+  "version": "0.0.1",
+  "license": "MPL-2.0",
+  "description": "DevTools extension that finds and highlights elements in the page.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/captainbrosset/devtools-highlighter.git"
+  },
+  "author": "Patrick Brosset",
+  "bugs": {
+    "url": "https://github.com/captainbrosset/devtools-highlighter/issues"
+  },
+  "homepage": "https://github.com/captainbrosset/devtools-highlighter#readme"
+}
