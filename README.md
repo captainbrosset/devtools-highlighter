@@ -42,7 +42,7 @@ That's it! You have the code now.
 * Make sure you are on the `Add-ons` tab.
 * Press the `Load Temporary Add-on` button.
 * A file explorer window should appear, in it, navigate to where you created the clone of the code.
-* Select the `manifest.json` file and open.
+* Select the `src/manifest.json` file and open.
 
 That's it! Now if you open a new tab on any site, and open DevTools, you should see the extension in the toolbox.
 
@@ -60,6 +60,13 @@ That's it! You should now see your changes.
 ## Submitting code changes to this repository
 
 Simply open [a pull request](https://help.github.com/articles/creating-a-pull-request/) and I'll try to review it quickly.
+
+# Building the extension
+
+This isn't necessary for working on the extension locally. This is needed only for deploying the extension to [AMO](http://addons.mozilla.org/).
+
+* Make sure to install the dependencies first `npm install`
+* Then run the build script with `npm run build`
 
 # Getting in touch
 

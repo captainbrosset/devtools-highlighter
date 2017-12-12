@@ -1,0 +1,8 @@
+# npm
+node_modules
+
+# web-ext output directory
+web-ext-artifacts
+
+# vscode
+.vscode
