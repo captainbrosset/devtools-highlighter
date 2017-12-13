@@ -28,6 +28,9 @@ port.onMessage.addListener(message => {
     case "scrollIntoView":
       scrollIntoView(message.index);
       break;
+    case "clear":
+      clear();
+      break;
   }
 });
 
@@ -38,6 +41,11 @@ function sendResponse(message) {
 
 // Keep track of all highlighted elements so we can un-highlight them.
 let currentlyHighlighted = [];
+
+function clear() {
+  unhighlightAll();
+  currentlyHighlighted = [];
+}
 
 function unhighlightAll() {
   for (let node of currentlyHighlighted) {
@@ -77,8 +85,7 @@ function scrollIntoView(index) {
 }
 
 function findAndHighlight({ type, query, options }) {
-  unhighlightAll();
-  currentlyHighlighted = [];
+  clear();
 
   let nodes = [];
   let error = null;

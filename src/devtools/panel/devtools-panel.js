@@ -25,7 +25,11 @@ window.addEventListener("mouseout", handleNodeOut);
 function findAndHighlight() {
   let query = inputEl.value.trim();
   if (!query) {
-    displayMessage("");
+    displayNodes([]);
+    browser.runtime.sendMessage({
+      tabId: browser.devtools.inspectedWindow.tabId,
+      action: "clear"
+    });
     return;
   }
 
@@ -48,23 +52,15 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   let { error, nodes, type } = request;
 
-  if (error) {
-    outputEl.classList.toggle("has-nodes", false);
-    displayMessage(error, "error");
-    countEl.innerHTML = "";
-  } else if (nodes.length) {
-    outputEl.classList.toggle("has-nodes", true);
-    displayNodes(nodes);
-    countEl.textContent = `${nodes.length} results`;
-  } else {
-    outputEl.classList.toggle("has-nodes", false);
-    displayMessage("Query did not match any node", "ok");
-    countEl.innerHTML = "";
-  }
+  displayMessage(error, nodes);
+  displayNodes(nodes);
 });
 
 function displayNodes(nodes) {
   nodeListEl.innerHTML = "";
+  countEl.innerHTML = "";
+
+  outputEl.classList.toggle("has-nodes", !!nodes.length);
 
   nodes.forEach(node => {
     let nodeEl = document.createElement("li");
@@ -85,6 +81,10 @@ function displayNodes(nodes) {
 
     nodeListEl.appendChild(nodeEl);
   });
+
+  if (nodes.length) {
+    countEl.textContent = `${nodes.length} results`;
+  }
 }
 
 function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
@@ -137,9 +137,18 @@ function shortenPreviewStr(str) {
   return str;
 }
 
-function displayMessage(message, type) {
-  messageEl.dataset.type = type;
-  messageEl.textContent = message;
+function displayMessage(error, nodes) {
+  messageEl.innerHTML = "";
+
+  if (error) {
+    messageEl.dataset.type = "error";
+    messageEl.textContent = error;
+  } else if (!nodes.length) {
+    messageEl.dataset.type = "ok";
+    messageEl.textContent = "Query did not match any node";
+  } else {
+    messageEl.dataset.type = "ok";
+  }
 }
 
 function getNodeIndex(nodeEl) {
