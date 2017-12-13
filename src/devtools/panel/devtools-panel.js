@@ -14,10 +14,12 @@ const typeSelectEl = document.querySelector("#type");
 const outputEl = document.querySelector(".output");
 const nodeListEl = document.querySelector("#nodes");
 const countEl = document.querySelector(".count");
+const clearButtonEl = document.querySelector(".clear");
 
 inputEl.addEventListener("input", findAndHighlight);
 unlimitedCheckboxEl.addEventListener("input", findAndHighlight);
 typeSelectEl.addEventListener("input", findAndHighlight);
+clearButtonEl.addEventListener("click", clear);
 window.addEventListener("click", handleButtonClick);
 window.addEventListener("mouseover", handleNodeOver);
 window.addEventListener("mouseout", handleNodeOut);
@@ -25,11 +27,7 @@ window.addEventListener("mouseout", handleNodeOut);
 function findAndHighlight() {
   let query = inputEl.value.trim();
   if (!query) {
-    displayNodes([]);
-    browser.runtime.sendMessage({
-      tabId: browser.devtools.inspectedWindow.tabId,
-      action: "clear"
-    });
+    clear();
     return;
   }
 
@@ -216,4 +214,13 @@ function handleNodeOut({ target }) {
     tabId: browser.devtools.inspectedWindow.tabId,
     action: "highlightAll"
   });
+}
+
+function clear() {
+  displayNodes([]);
+  browser.runtime.sendMessage({
+    tabId: browser.devtools.inspectedWindow.tabId,
+    action: "clear"
+  });
+  inputEl.value = "";
 }
