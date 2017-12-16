@@ -128,7 +128,7 @@ function parseComputedStyleQuery(query) {
   name = name.trim();
   value = value.trim();
 
-  if (value == "!") {
+  if (value == "!" || value == "~") {
     return null;
   }
 
@@ -148,6 +148,8 @@ function findNodesFromComputedStyle(query) {
     acceptNode: node => {
       let style = window.getComputedStyle(node);
       if (value.startsWith("!") && style[name] != value.substring(1)) {
+        return NodeFilter.FILTER_ACCEPT;
+      } else if (value.startsWith("~") && style[name].includes(value.substring(1))) {
         return NodeFilter.FILTER_ACCEPT;
       } else if (style[name] == value) {
         return NodeFilter.FILTER_ACCEPT;
