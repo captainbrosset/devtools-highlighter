@@ -119,54 +119,74 @@ function findAndHighlight({ type, query, options }) {
 }
 
 function parseComputedStyleQuery(query) {
-  let match = query.match(/[^:]+:[^:]+/);
-  if (!match || match[0] !== query) {
-    return null;
+  let re = /([^: ]+):([~!]{0,1})([^:~! ]+)/g;
+  let commands = [];
+
+  while (true) {
+    var result = re.exec(query);
+    if (!result) break;
+    commands.push({
+      name: result[1],
+      op: result[2],
+      value: result[3]
+    });
   }
 
-  let [name, value] = query.split(":");
-  name = name.trim();
-  value = value.trim();
-
-  if (value == "!" || value == "~") {
-    return null;
+  if (commands.length !== query.split(/[ ]+/g).filter(s => s).length) {
+    return [];
   }
 
-  return { name, value };
+  return commands;
 }
 
-function findNodesFromComputedStyle(query) {
-  let parsed = parseComputedStyleQuery(query);
-  if (!parsed) {
-    return { nodes: [], error: "Invalid query" };
-  }
-
-  let { name, value } = parsed;
-  let nodes = [];
-
+function getComputedStyleWalker(root, name, op, value) {
   const filter = {
     acceptNode: node => {
       let style = window.getComputedStyle(node);
-      if (value.startsWith("!") && style[name] != value.substring(1)) {
+      if (op == "!" && style[name] != value) {
         return NodeFilter.FILTER_ACCEPT;
-      } else if (value.startsWith("~") && style[name].includes(value.substring(1))) {
+      } else if (op == "~" && style[name].includes(value)) {
         return NodeFilter.FILTER_ACCEPT;
-      } else if (style[name] == value) {
+      } else if (op == "" && style[name] == value) {
         return NodeFilter.FILTER_ACCEPT;
       }
       return NodeFilter.FILTER_SKIP;
     }
   };
 
-  const walker = document.createTreeWalker(document.documentElement,
-                                           NodeFilter.SHOW_ELEMENT,
-                                           filter);
+  return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, filter);
+}
 
+function findNodesMatching(root, name, op, value) {
+  const walker = getComputedStyleWalker(root, name, op, value);
+  const nodes = [];
   while (walker.nextNode()) {
     nodes.push(walker.currentNode);
   }
+  return nodes;
+}
 
-  return { nodes };
+function findNodesFromComputedStyle(query) {
+  let commands = parseComputedStyleQuery(query);
+  if (!commands.length) {
+    return { nodes: [], error: "Invalid query" };
+  }
+
+  let roots = [document.documentElement];
+  let nodes = [];
+
+  for (let i = 0; i < commands.length; i ++) {
+    const { name, op, value } = commands[i];
+
+    nodes = [];
+    for (let root of roots) {
+      nodes = nodes.concat(findNodesMatching(root, name, op, value));
+    }
+
+    roots = nodes;
+  }
+
+  return { nodes: roots };
 }
 
 function findNodesFromSelector(query) {
