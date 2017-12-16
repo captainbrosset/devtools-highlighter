@@ -4,13 +4,47 @@ This is the code for a Firefox DevTools extension.
 
 This extension adds a new panel to the toolbox. The panel allows users to search for nodes in the current page.
 
-There are 2 ways to search:
-* either by CSS selectors,
-* or by computed style queries (e.g. `display:grid` will search for all element with a computed `display` value of `grid`. It is also possible to search for e.g. `display:!block` to find all non-blocks).
+# Usage documentation
 
-Once a search has returned results, they are displayed in the panel and all highlighted in the page. Hovering over a single result highlights only the corresponding element, and it is also possible to scroll the element into view.
+There are 2 ways to search within the panel:
 
-The panel has only been tested in Firefox although, in theory, it should also work in Chrome since the same APIs should be supported there too.
+* By using computed style queries.
+* Or by using CSS selectors.
+
+## Computed style queries
+
+This is the main feature of this extension. It is very useful for finding elements on a page that have certain CSS computed styles.
+
+For example, say you want to list all of the CSS grids on a page. You can use this query to do this `display:grid`.
+
+The extension will simply loop through *all* elements on the page and only display the ones that do have their CSS computed `display` value set to `grid`.
+
+You can also use a couple of operators to make searching more useful:
+
+* `display:!block` will find all elements that have a `display` value other than `block`.
+* `display:~flex` will find all elements that have a `display` value that includes the substring `flex`. So it will match elements that have it set to `inline-flex` and `flex`.
+
+The extension also supports descendant queries. That means you can find elements that have a given style and that are descendant of elements that have another given style.
+
+For instance `display:flex align-self:start` will find all elements with `align-self` set to `start` and that are descendants of a `display:flex` element.
+
+## CSS selector queries
+
+This is a more traditional way to search for elements in the page but can be useful too.
+
+With this feature, you can simply type any CSS selector that would work with `document.querySelectorAll` and the matching elements will be listed and highlighted.
+
+## Using the results
+
+Once a search has returned results, they are displayed in the panel and they are all highlighted in the page too.
+
+Hovering over a single result will highlight only the corresponding element.
+
+It is also possible to scroll an element into view by clicking on the corresponding link in the panel.
+
+# Browser support
+
+The extension has only been tested in Firefox, but uses WebExtension APIs, so in theory it should work in Chrome too.
 
 # Helping!
 
@@ -67,6 +101,10 @@ This isn't necessary for working on the extension locally. This is needed only f
 
 * Make sure to install the dependencies first `npm install`
 * Then run the build script with `npm run build`
+
+# Technical documentation
+
+Very much needed. In particular explaining what each scope is responsible for would be nice.
 
 # Getting in touch
 
