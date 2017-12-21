@@ -6,7 +6,7 @@
   "author": "Patrick Brosset",
   "homepage_url": "https://github.com/captainbrosset/devtools-highlighter",
   "icons": {
-    "48": "icons/star.png"
+    "48": "icons/logo.svg"
   },
 
   "background": {

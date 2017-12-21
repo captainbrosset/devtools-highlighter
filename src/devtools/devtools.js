@@ -14,7 +14,7 @@ function handleHidden() {
 
 browser.devtools.panels.create(
   "Highlighter",
-  "icons/star.png",
+  "icons/logo.svg",
   "devtools/panel/panel.html"
 ).then(panel => {
   panel.onShown.addListener(handleShown);
