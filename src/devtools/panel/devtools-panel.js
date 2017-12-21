@@ -5,7 +5,8 @@
 "use strict";
 
 const MAX_STR_SIZE = 30;
-const MAX_ATTR_NB = 10;
+const MAX_ATTR_NB = 5;
+const ELLIPSIS = "…";
 
 const inputEl = document.querySelector("#query");
 const messageEl = document.querySelector("#message");
@@ -98,9 +99,15 @@ function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
   nameEl.textContent = shortenPreviewStr(nodeName.toLowerCase());
   previewEl.appendChild(nameEl);
 
-  if (attributes.length > MAX_ATTR_NB) {
-    attributes = attributes.splice(0, MAX_ATTR_NB);
-  }
+  // Always display the id and class attributes first if they are present, and then the
+  // rest until MAX_ATTR_NB is reached.
+  let initialAttributesLength = attributes.length;
+  attributes = attributes.sort((a, b) => {
+    if (a.name === "id") return -1;
+    if (b.name === "id") return 1;
+    if (a.name === "class") return -1;
+    return 1;
+  }).splice(0, MAX_ATTR_NB);
 
   for (let { name, value } of  attributes) {
     let attrEl = document.createElement("span");
@@ -123,6 +130,11 @@ function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
     previewEl.appendChild(attrEl);
   }
 
+  // If there were more attributes, let the user know.
+  if (initialAttributesLength > MAX_ATTR_NB) {
+    previewEl.appendChild(document.createTextNode(" " + ELLIPSIS));
+  }
+
   previewEl.appendChild(document.createTextNode(">"));
 
   parentEl.appendChild(previewEl);
@@ -130,7 +142,7 @@ function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
 
 function shortenPreviewStr(str) {
   if (str.length > MAX_STR_SIZE) {
-    return str.substring(0, MAX_STR_SIZE) + "…";
+    return str.substring(0, MAX_STR_SIZE) + ELLIPSIS;
   }
   return str;
 }
