@@ -4,6 +4,8 @@
 
 "use strict";
 
+let browser = window.browser || chrome;
+
 function handleShown() {
   console.log("panel is being shown");
 }
@@ -15,8 +17,12 @@ function handleHidden() {
 browser.devtools.panels.create(
   "Highlighter",
   "../icons/logo.svg",
-  "panel/panel.html"
-).then(panel => {
+  "devtools/panel/panel.html",
+  panel => {
+    panel.onShown.addListener(handleShown);
+    panel.onHidden.addListener(handleHidden);
+  }
+)/*.then(panel => {
   panel.onShown.addListener(handleShown);
   panel.onHidden.addListener(handleHidden);
-});
+})*/;

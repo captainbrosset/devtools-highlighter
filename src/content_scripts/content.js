@@ -8,6 +8,7 @@ const NODE_LIMIT = 100;
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
 
 // Open the port to communicate with the background script.
+let browser = window.browser || chrome;
 const port = browser.runtime.connect({ name: "cs-port" });
 
 // Handle background script messages.
