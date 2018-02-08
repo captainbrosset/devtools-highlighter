@@ -12,22 +12,10 @@ let paneTemplate = window.browser ? 'panel/panel.html' : 'devtools/panel/panel.h
 // Firefox has them on window.browser
 let browser = window.browser || chrome;
 
-function handleShown() {
-  console.log("panel is being shown");
-}
-
-function handleHidden() {
-  console.log("panel is being hidden");
-}
-
 // In chrome this function
 // doesn't return a promise
 browser.devtools.panels.create(
   "Highlighter",
   "../icons/logo.svg",
-  paneTemplate,
-  panel => {
-    panel.onShown.addListener(handleShown);
-    panel.onHidden.addListener(handleHidden);
-  }
+  paneTemplate
 );
