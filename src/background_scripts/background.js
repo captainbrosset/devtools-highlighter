@@ -4,6 +4,8 @@
 
 "use strict";
 
+let browser = window.browser || chrome;
+
 // Waiting for a connection from the content script and storing the port.
 let contentScriptPort;
 browser.runtime.onConnect.addListener(port => {

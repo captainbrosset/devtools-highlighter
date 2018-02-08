@@ -4,19 +4,18 @@
 
 "use strict";
 
-function handleShown() {
-  console.log("panel is being shown");
-}
+// Firefox expects path relative it this file
+// Chrome expects path relative to the extension directory
+let paneTemplate = window.browser ? 'panel/panel.html' : 'devtools/panel/panel.html';
 
-function handleHidden() {
-  console.log("panel is being hidden");
-}
+// All DevTools APIs are name-spaced in "chrome" in Chrome
+// Firefox has them on window.browser
+let browser = window.browser || chrome;
 
+// In chrome this function
+// doesn't return a promise
 browser.devtools.panels.create(
   "Highlighter",
   "../icons/logo.svg",
-  "panel/panel.html"
-).then(panel => {
-  panel.onShown.addListener(handleShown);
-  panel.onHidden.addListener(handleHidden);
-});
+  paneTemplate
+);

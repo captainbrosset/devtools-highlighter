@@ -4,6 +4,8 @@
 
 "use strict";
 
+let browser = window.browser || chrome;
+
 const MAX_STR_SIZE = 30;
 const MAX_ATTR_NB = 5;
 const ELLIPSIS = "…";

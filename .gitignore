@@ -9,3 +9,6 @@ dist
 
 # macOS stuff
 .DS_Store
+
+# webstorm
+.idea/
