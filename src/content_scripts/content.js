@@ -6,6 +6,7 @@
 
 const NODE_LIMIT = 100;
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
+const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
 // Open the port to communicate with the background script.
 let browser = window.browser || chrome;
@@ -22,9 +23,6 @@ port.onMessage.addListener(message => {
       break;
     case "highlightAll":
       reHighlightAll();
-      break;
-    case "inspectOne":
-      inspectOne(message.index);
       break;
     case "scrollIntoView":
       scrollIntoView(message.index);
@@ -67,14 +65,6 @@ function reHighlightAll() {
   for (let node of currentlyHighlighted) {
     highlightNode(node);
   }
-}
-
-function inspectOne(index) {
-  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
-    return;
-  }
-
-  // TODO: find a way to make this work.
 }
 
 function scrollIntoView(index) {
@@ -203,20 +193,35 @@ function findNodesFromSelector(query) {
   return { nodes, error };
 }
 
+// An unique number generator
+let nextUnique = (function uniqueNumberGenerator() {
+  let uniqueNum = 0;
+  return () => uniqueNum++ && uniqueNum
+})();
+
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
+  node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique())
 }
 
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
+  node.removeAttribute(UNIQUE_ATTRIBUTE);
 }
 
 function createNodeResponse(node) {
+  let attributes = [...node.attributes]
+    .map(({ name, value }) => ({ name, value }));
+
+  // Getting the value of unique identifier
+  // for the particular node
+  let uniqueIdentifier = attributes.find(e => e.name === UNIQUE_ATTRIBUTE).value;
   return {
     nodeName: node.nodeName,
-    attributes: [...node.attributes]
-                .filter(({ name }) => name !== STYLING_ATTRIBUTE)
-                .map(({ name, value }) => ({ name, value })),
+
+    // Sending the fully packaged selector
+    uniqueSelector: `[${UNIQUE_ATTRIBUTE}="${uniqueIdentifier}"]`,
+    attributes: attributes.filter(({ name }) => [UNIQUE_ATTRIBUTE || STYLING_ATTRIBUTE].indexOf(name) < 0),
     isHidden: !node.getBoxQuads || !node.getBoxQuads().length
   }
 }
