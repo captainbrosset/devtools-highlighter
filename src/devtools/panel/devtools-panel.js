@@ -177,7 +177,7 @@ function handleButtonClick({ target }) {
   let isSelectButton = target.tagName.toLowerCase() == "button" &&
                        target.classList.contains("select");
   let isSrollButton = target.tagName.toLowerCase() == "button" &&
-                       target.classList.contains("scroll");
+                      target.classList.contains("scroll");
 
   if (!isSrollButton && !isSelectButton) {
     return;
@@ -187,18 +187,24 @@ function handleButtonClick({ target }) {
   let index = getNodeIndex(nodeEl);
 
   if (isSrollButton) {
-    browser.runtime.sendMessage({
-      tabId: browser.devtools.inspectedWindow.tabId,
-      action: "scrollIntoView",
-      index
-    });
+    handleScrollButtonClick(index);
   } else if (isSelectButton) {
-    // Using the same index
-    browser.devtools.inspectedWindow.eval(`
-      inspect(document.querySelector('${currentNodes[index].uniqueSelector}'));`,
-      console.log
-    )
+    handleSelectButtonClick(index);
   }
+}
+
+function handleScrollButtonClick(nodeIndex) {
+  browser.runtime.sendMessage({
+    tabId: browser.devtools.inspectedWindow.tabId,
+    action: "scrollIntoView",
+    index: nodeIndex
+  });
+}
+
+function handleSelectButtonClick(nodeIndex) {
+  let selector = currentNodes[nodeIndex].uniqueSelector;
+  console.log(selector);
+  browser.devtools.inspectedWindow.eval(`inspect(document.querySelector('${selector}'));`);
 }
 
 var wasOver = false;

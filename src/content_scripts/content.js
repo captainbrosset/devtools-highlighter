@@ -43,12 +43,19 @@ let currentlyHighlighted = [];
 
 function clear() {
   unhighlightAll();
+  untagAll();
   currentlyHighlighted = [];
 }
 
 function unhighlightAll() {
   for (let node of currentlyHighlighted) {
     unhighlightNode(node);
+  }
+}
+
+function untagAll() {
+  for (let node of currentlyHighlighted) {
+    untagNode(node);
   }
 }
 
@@ -97,6 +104,7 @@ function findAndHighlight({ type, query, options }) {
 
   for (let node of nodes) {
     highlightNode(node);
+    tagNode(node);
     currentlyHighlighted.push(node);
   }
 
@@ -201,27 +209,38 @@ let nextUnique = (function uniqueNumberGenerator() {
 
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
-  node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique())
+}
+
+function tagNode(node) {
+  node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique());
 }
 
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
+}
+
+function untagNode(node) {
   node.removeAttribute(UNIQUE_ATTRIBUTE);
 }
 
 function createNodeResponse(node) {
-  let attributes = [...node.attributes]
-    .map(({ name, value }) => ({ name, value }));
+  // Getting all attributes as simple {name, value} objects.
+  let attributes = [...node.attributes].map(({ name, value }) => ({ name, value }));
 
-  // Getting the value of unique identifier
-  // for the particular node
+  // Getting the value of the unique identifier for this node and creating a special
+  // attribute selector with it.
   let uniqueIdentifier = attributes.find(e => e.name === UNIQUE_ATTRIBUTE).value;
+  let uniqueSelector = `[${UNIQUE_ATTRIBUTE}="${uniqueIdentifier}"]`;
+
+  // Filtering the attributes to remove the special ones the extension is adding.
+  attributes = attributes.filter(({ name }) => {
+    return name !== UNIQUE_ATTRIBUTE && name !== STYLING_ATTRIBUTE;
+  });
+
   return {
     nodeName: node.nodeName,
-
-    // Sending the fully packaged selector
-    uniqueSelector: `[${UNIQUE_ATTRIBUTE}="${uniqueIdentifier}"]`,
-    attributes: attributes.filter(({ name }) => [UNIQUE_ATTRIBUTE || STYLING_ATTRIBUTE].indexOf(name) < 0),
-    isHidden: !node.getBoxQuads || !node.getBoxQuads().length
-  }
+    attributes,
+    isHidden: !node.getBoxQuads || !node.getBoxQuads().length,
+    uniqueSelector
+  };
 }
