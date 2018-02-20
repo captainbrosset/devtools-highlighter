@@ -40,7 +40,7 @@ Once a search has returned results, they are displayed in the panel and they are
 
 Hovering over a single result will highlight only the corresponding element.
 
-It is also possible to scroll an element into view by clicking on the corresponding link in the panel.
+It is also possible to scroll elements into view or select them in the inspector panel by clicking on corresponding links.
 
 # Browser support
 
