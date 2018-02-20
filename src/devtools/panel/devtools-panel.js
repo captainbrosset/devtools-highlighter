@@ -6,13 +6,17 @@
 
 let browser = window.browser || chrome;
 
-// A global variable to store the current nodes
-let currentNodes;
-
+// Used to shorten strings in the panel (attributes).
 const MAX_STR_SIZE = 30;
-const MAX_ATTR_NB = 5;
+// Used when long strings are shortened.
 const ELLIPSIS = "…";
+// Used to limit the number of attributes displayed in the panel.
+const MAX_ATTR_NB = 5;
 
+// Used to store the unique selectors of currently found nodes.
+let currentUniqueSelectors = [];
+
+// The various useful DOM elements in the panel.
 const inputEl = document.querySelector("#query");
 const messageEl = document.querySelector("#message");
 const unlimitedCheckboxEl = document.querySelector("#unlimited");
@@ -22,6 +26,7 @@ const nodeListEl = document.querySelector("#nodes");
 const countEl = document.querySelector(".count");
 const clearButtonEl = document.querySelector(".clear");
 
+// Start listening for events in the panel, to handle user inputs.
 inputEl.addEventListener("input", findAndHighlight);
 unlimitedCheckboxEl.addEventListener("input", findAndHighlight);
 typeSelectEl.addEventListener("input", findAndHighlight);
@@ -30,6 +35,10 @@ window.addEventListener("click", handleButtonClick);
 window.addEventListener("mouseover", handleNodeOver);
 window.addEventListener("mouseout", handleNodeOut);
 
+/**
+ * Execute the current query by sending a message to the content script, which will find
+ * all matching nodes and highlight them (or may send an error message back).
+ */
 function findAndHighlight() {
   let query = inputEl.value.trim();
   if (!query) {
@@ -56,19 +65,26 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   let { error, nodes, type } = request;
 
-  // Making it global
-  currentNodes = nodes;
+  // Remember the unique selectors, they'll be useful later when selecting nodes in the
+  // inspector.
+  currentUniqueSelectors = nodes.map(({uniqueSelector}) => uniqueSelector);
 
   displayMessage(error, nodes);
   displayNodes(nodes);
 });
 
+/**
+ * Handle a successful response from the content script: nodes were found and highlighted.
+ * @param {Array} nodes The list of nodes which were found and highlighted.
+ */
 function displayNodes(nodes) {
+  // Clear the output.
   nodeListEl.innerHTML = "";
   countEl.innerHTML = "";
 
   outputEl.classList.toggle("has-nodes", !!nodes.length);
 
+  // Display all nodes.
   nodes.forEach(node => {
     let nodeEl = document.createElement("li");
 
@@ -89,11 +105,20 @@ function displayNodes(nodes) {
     nodeListEl.appendChild(nodeEl);
   });
 
+  // Display the number of results.
   if (nodes.length) {
     countEl.textContent = `${nodes.length} results`;
   }
 }
 
+/**
+ * Append one node in the output.
+ * @param {Object} nodeData Some data about the node:
+ * - nodeName {String} The name of the node.
+ * - attributes {Array} All attributes as {name, value} objects.
+ * - isHidden {Boolean} Is the node rendered or not?
+ * @param {DOMNode} parentEl Where in the DOM to attach the node preview.
+ */
 function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
   let previewEl = document.createElement("span");
   previewEl.classList.add("preview");
@@ -148,6 +173,11 @@ function appendNodePreview({ nodeName, attributes, isHidden }, parentEl) {
   parentEl.appendChild(previewEl);
 }
 
+/**
+ * Make a string shorter if needed.
+ * @param {String} str The string.
+ * @return {String} The shorter string, or the same string if it wasn't long.
+ */
 function shortenPreviewStr(str) {
   if (str.length > MAX_STR_SIZE) {
     return str.substring(0, MAX_STR_SIZE) + ELLIPSIS;
@@ -155,6 +185,11 @@ function shortenPreviewStr(str) {
   return str;
 }
 
+/**
+ * Handle a response from the content script by displaying an error message if needed.
+ * @param {String} error The error message if any.
+ * @param {Array} nodes The list of nodes.
+ */
 function displayMessage(error, nodes) {
   messageEl.innerHTML = "";
 
@@ -169,10 +204,20 @@ function displayMessage(error, nodes) {
   }
 }
 
+/**
+ * Based on the current list of nodes displayed in the output, find the index of one of
+ * them.
+ * @param {DOMNode} nodeEl One of the nodes displayed in the panel.
+ * @return {Number} The iundex of this node.
+ */
 function getNodeIndex(nodeEl) {
   return [...nodeEl.parentNode.children].indexOf(nodeEl);
 }
 
+/**
+ * Handle a click in the panel. Only allow clicks on the select and scroll buttons.
+ * @param {DOMEvent} event The event object.
+ */
 function handleButtonClick({ target }) {
   let isSelectButton = target.tagName.toLowerCase() == "button" &&
                        target.classList.contains("select");
@@ -193,6 +238,10 @@ function handleButtonClick({ target }) {
   }
 }
 
+/**
+ * Handle a click on the scroll button of one given node preview in the ouptut.
+ * @param {Number} nodeIndex The index of the node which scroll button has been clicked.
+ */
 function handleScrollButtonClick(nodeIndex) {
   browser.runtime.sendMessage({
     tabId: browser.devtools.inspectedWindow.tabId,
@@ -201,13 +250,23 @@ function handleScrollButtonClick(nodeIndex) {
   });
 }
 
+/**
+ * Handle a click on the select button of one given node preview in the ouptut.
+ * @param {Number} nodeIndex The index of the node which select button has been clicked.
+ */
 function handleSelectButtonClick(nodeIndex) {
-  let selector = currentNodes[nodeIndex].uniqueSelector;
-  console.log(selector);
+  let selector = currentUniqueSelectors[nodeIndex];
   browser.devtools.inspectedWindow.eval(`inspect(document.querySelector('${selector}'));`);
 }
 
+// Remember if the mouse was over a node in the output.
 var wasOver = false;
+
+/**
+ * Handle a mouseover in the panel. Only process events on node previews in the output,
+ * and use this event to highlight the node in the page.
+ * @param {DOMEvent} event.
+ */
 function handleNodeOver({ target }) {
   let nodeEl = target.closest("#nodes li");
   if (!nodeEl || nodeEl.querySelector(".preview.hidden")) {
@@ -224,6 +283,11 @@ function handleNodeOver({ target }) {
   });
 }
 
+/**
+ * Handle a mouseout in the panel. Only process events on node previews in the output,
+ * and use this event to re-highlight all nodes in the page.
+ * @param {DOMEvent} event.
+ */
 function handleNodeOut({ target }) {
   if (!wasOver) {
     return;
@@ -236,6 +300,9 @@ function handleNodeOut({ target }) {
   });
 }
 
+/**
+ * Clear the output and unhighlight everything.
+ */
 function clear() {
   displayNodes([]);
   browser.runtime.sendMessage({

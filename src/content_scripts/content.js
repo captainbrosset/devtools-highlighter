@@ -4,12 +4,17 @@
 
 "use strict";
 
+// How many nodes are returned to the panel, at most, unless the unlimited options is
+// passed.
 const NODE_LIMIT = 100;
+
+// Special attributes used by the extension. These attributes are added to nodes in the
+// page.
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
 const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
 // Open the port to communicate with the background script.
-let browser = window.browser || chrome;
+const browser = window.browser || chrome;
 const port = browser.runtime.connect({ name: "cs-port" });
 
 // Handle background script messages.
@@ -38,27 +43,41 @@ function sendResponse(message) {
   port.postMessage(message);
 }
 
-// Keep track of all highlighted elements so we can un-highlight them.
+// Keep track of all highlighted elements so we can un-highlight them later.
 let currentlyHighlighted = [];
 
+/**
+ * Clear all found nodes.
+ */
 function clear() {
   unhighlightAll();
   untagAll();
   currentlyHighlighted = [];
 }
 
+/**
+ * Unhighlight all nodes at once, but keep the list so we can highlight them again later.
+ */
 function unhighlightAll() {
   for (let node of currentlyHighlighted) {
     unhighlightNode(node);
   }
 }
 
+/**
+ * Untag (remove the unique IDs) of all nodes, but keep the list so we can go back to them
+ * later.
+ */
 function untagAll() {
   for (let node of currentlyHighlighted) {
     untagNode(node);
   }
 }
 
+/**
+ * Highlight just one node. So, unhighlight all others, and highlight just this one.
+ * @param {Number} index The index of the node in the currentlyHighlighted array.
+ */
 function highlightOne(index) {
   if (!currentlyHighlighted || !currentlyHighlighted[index]) {
     return;
@@ -68,12 +87,19 @@ function highlightOne(index) {
   highlightNode(currentlyHighlighted[index]);
 }
 
+/**
+ * Highlight all known nodes again.
+ */
 function reHighlightAll() {
   for (let node of currentlyHighlighted) {
     highlightNode(node);
   }
 }
 
+/**
+ * Scroll one of the known nodes into view.
+ * @param {Number} index The index of the node in the currentlyHighlighted array.
+ */
 function scrollIntoView(index) {
   if (!currentlyHighlighted || !currentlyHighlighted[index]) {
     return;
@@ -82,6 +108,13 @@ function scrollIntoView(index) {
   currentlyHighlighted[index].scrollIntoView({ behavior: "smooth" });
 }
 
+/**
+ * Execute a query (of any supported type) to find nodes and then highlight them.
+ * @param {Object} data The properties required here are:
+ * - type {String} The type of query to run. Either computed or selector.
+ * - query {String} The query itself
+ * - options {Object} Options for executing the query, like unlimited {Boolean}
+ */
 function findAndHighlight({ type, query, options }) {
   clear();
 
@@ -117,6 +150,11 @@ function findAndHighlight({ type, query, options }) {
   })
 }
 
+/**
+ * Given a computed-style query, parse it to a list of commands.
+ * @param {String} query The query to be parsed.
+ * @return {Array} The list of commands.
+ */
 function parseComputedStyleQuery(query) {
   let re = /([^: ]+):([~!]{0,1})([^:~! ]+)/g;
   let commands = [];
@@ -138,6 +176,14 @@ function parseComputedStyleQuery(query) {
   return commands;
 }
 
+/**
+ * Create a DOM tree walker that can find nodes based on a parsed computed style query.
+ * @param {DOMNode} root The root DOM node where to start walking the DOM.
+ * @param {String} name The property name to use in nodes' computed styles.
+ * @param {String} op The operator to use to match the style value (!, ~ or empty string).
+ * @param {String} value The property value to look for in nodes' computed styles.
+ * @return {TreeWalker}
+ */
 function getComputedStyleWalker(root, name, op, value) {
   const filter = {
     acceptNode: node => {
@@ -156,6 +202,14 @@ function getComputedStyleWalker(root, name, op, value) {
   return document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, filter);
 }
 
+/**
+ * Given a parsed computed-style query, find all nodes in the page.
+ * @param {DOMNode} root The root DOM node where to start walking the DOM.
+ * @param {String} name The property name to use in nodes' computed styles.
+ * @param {String} op The operator to use to match the style value (!, ~ or empty string).
+ * @param {String} value The property value to look for in nodes' computed styles.
+ * @return {Array} The list of nodes.
+ */
 function findNodesMatching(root, name, op, value) {
   const walker = getComputedStyleWalker(root, name, op, value);
   const nodes = [];
@@ -165,6 +219,13 @@ function findNodesMatching(root, name, op, value) {
   return nodes;
 }
 
+/**
+ * Given a non-parsed computed-style query, find all nodes in the page.
+ * @param {String} query The query to run.
+ * @return {Object} A {nodes, error} object:
+ * - nodes {Array} The list of matching nodes.
+ * - error {String} A potential error when running the query.
+ */
 function findNodesFromComputedStyle(query) {
   let commands = parseComputedStyleQuery(query);
   if (!commands.length) {
@@ -188,6 +249,13 @@ function findNodesFromComputedStyle(query) {
   return { nodes: roots };
 }
 
+/**
+ * Given a selector query, find all nodes in the page.
+ * @param {String} query The query to run.
+ * @return {Object} A {nodes, error} object:
+ * - nodes {Array} The list of matching nodes.
+ * - error {String} A potential error when running the query.
+ */
 function findNodesFromSelector(query) {
   let nodes = [];
   let error;
@@ -201,28 +269,51 @@ function findNodesFromSelector(query) {
   return { nodes, error };
 }
 
-// An unique number generator
+// An unique number generator, useful for tagging elements that we want to select in the
+// inspector later.
 let nextUnique = (function uniqueNumberGenerator() {
   let uniqueNum = 0;
   return () => uniqueNum++ && uniqueNum
 })();
 
+/**
+ * Highlight one node in the page.
+ * @param {DOMNode} node The node to be highlighted.
+ */
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
 }
 
+/**
+ * Tag one node in the page, so we can then select it in the inspector.
+ * @param {DOMNode} node The node to be tagged.
+ */
 function tagNode(node) {
   node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique());
 }
 
+/**
+ * Unhighlight one node in the page.
+ * @param {DOMNode} node The node to be unhighlighted.
+ */
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
 }
 
+/**
+ * Untag one node in the page.
+ * @param {DOMNode} node The node to be untagged.
+ */
 function untagNode(node) {
   node.removeAttribute(UNIQUE_ATTRIBUTE);
 }
 
+/**
+ * Create a serializable response that represents a single node in the page, which can be
+ * sent to the devtools panel.
+ * @param {DOMNode} node The DOM node to be represented in the response.
+ * @return {Object} The response object.
+ */
 function createNodeResponse(node) {
   // Getting all attributes as simple {name, value} objects.
   let attributes = [...node.attributes].map(({ name, value }) => ({ name, value }));
