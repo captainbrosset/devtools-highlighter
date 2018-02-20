@@ -150,7 +150,3 @@ body {
   text-decoration: underline;
   color: #f06;
 }
-
-#nodes button.select {
-  display: none;
-}

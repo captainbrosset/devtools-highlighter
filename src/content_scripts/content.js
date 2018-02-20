@@ -6,6 +6,7 @@
 
 const NODE_LIMIT = 100;
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
+const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
 // Open the port to communicate with the background script.
 let browser = window.browser || chrome;
@@ -22,9 +23,6 @@ port.onMessage.addListener(message => {
       break;
     case "highlightAll":
       reHighlightAll();
-      break;
-    case "inspectOne":
-      inspectOne(message.index);
       break;
     case "scrollIntoView":
       scrollIntoView(message.index);
@@ -45,12 +43,19 @@ let currentlyHighlighted = [];
 
 function clear() {
   unhighlightAll();
+  untagAll();
   currentlyHighlighted = [];
 }
 
 function unhighlightAll() {
   for (let node of currentlyHighlighted) {
     unhighlightNode(node);
+  }
+}
+
+function untagAll() {
+  for (let node of currentlyHighlighted) {
+    untagNode(node);
   }
 }
 
@@ -67,14 +72,6 @@ function reHighlightAll() {
   for (let node of currentlyHighlighted) {
     highlightNode(node);
   }
-}
-
-function inspectOne(index) {
-  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
-    return;
-  }
-
-  // TODO: find a way to make this work.
 }
 
 function scrollIntoView(index) {
@@ -107,6 +104,7 @@ function findAndHighlight({ type, query, options }) {
 
   for (let node of nodes) {
     highlightNode(node);
+    tagNode(node);
     currentlyHighlighted.push(node);
   }
 
@@ -203,20 +201,46 @@ function findNodesFromSelector(query) {
   return { nodes, error };
 }
 
+// An unique number generator
+let nextUnique = (function uniqueNumberGenerator() {
+  let uniqueNum = 0;
+  return () => uniqueNum++ && uniqueNum
+})();
+
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
+}
+
+function tagNode(node) {
+  node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique());
 }
 
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
 }
 
+function untagNode(node) {
+  node.removeAttribute(UNIQUE_ATTRIBUTE);
+}
+
 function createNodeResponse(node) {
+  // Getting all attributes as simple {name, value} objects.
+  let attributes = [...node.attributes].map(({ name, value }) => ({ name, value }));
+
+  // Getting the value of the unique identifier for this node and creating a special
+  // attribute selector with it.
+  let uniqueIdentifier = attributes.find(e => e.name === UNIQUE_ATTRIBUTE).value;
+  let uniqueSelector = `[${UNIQUE_ATTRIBUTE}="${uniqueIdentifier}"]`;
+
+  // Filtering the attributes to remove the special ones the extension is adding.
+  attributes = attributes.filter(({ name }) => {
+    return name !== UNIQUE_ATTRIBUTE && name !== STYLING_ATTRIBUTE;
+  });
+
   return {
     nodeName: node.nodeName,
-    attributes: [...node.attributes]
-                .filter(({ name }) => name !== STYLING_ATTRIBUTE)
-                .map(({ name, value }) => ({ name, value })),
-    isHidden: !node.getBoxQuads || !node.getBoxQuads().length
-  }
+    attributes,
+    isHidden: !node.getBoxQuads || !node.getBoxQuads().length,
+    uniqueSelector
+  };
 }

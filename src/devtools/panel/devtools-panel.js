@@ -6,6 +6,9 @@
 
 let browser = window.browser || chrome;
 
+// A global variable to store the current nodes
+let currentNodes;
+
 const MAX_STR_SIZE = 30;
 const MAX_ATTR_NB = 5;
 const ELLIPSIS = "…";
@@ -52,6 +55,9 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   let { error, nodes, type } = request;
+
+  // Making it global
+  currentNodes = nodes;
 
   displayMessage(error, nodes);
   displayNodes(nodes);
@@ -171,7 +177,7 @@ function handleButtonClick({ target }) {
   let isSelectButton = target.tagName.toLowerCase() == "button" &&
                        target.classList.contains("select");
   let isSrollButton = target.tagName.toLowerCase() == "button" &&
-                       target.classList.contains("scroll");
+                      target.classList.contains("scroll");
 
   if (!isSrollButton && !isSelectButton) {
     return;
@@ -181,24 +187,24 @@ function handleButtonClick({ target }) {
   let index = getNodeIndex(nodeEl);
 
   if (isSrollButton) {
-    browser.runtime.sendMessage({
-      tabId: browser.devtools.inspectedWindow.tabId,
-      action: "scrollIntoView",
-      index
-    });
+    handleScrollButtonClick(index);
   } else if (isSelectButton) {
-    // Does not work because useContentScriptContext doesn't seem to be supported on FF
-    // browser.devtools.inspectedWindow.eval(`
-    //   inspect(currentlyHighlighted[${index}]);
-    // `, { useContentScriptContext: true });
-
-    // Does not work because the content script doesn't seem to have access to inspect
-    // browser.runtime.sendMessage({
-    //   tabId: browser.devtools.inspectedWindow.tabId,
-    //   action: "inspectOne",
-    //   index
-    // });
+    handleSelectButtonClick(index);
   }
+}
+
+function handleScrollButtonClick(nodeIndex) {
+  browser.runtime.sendMessage({
+    tabId: browser.devtools.inspectedWindow.tabId,
+    action: "scrollIntoView",
+    index: nodeIndex
+  });
+}
+
+function handleSelectButtonClick(nodeIndex) {
+  let selector = currentNodes[nodeIndex].uniqueSelector;
+  console.log(selector);
+  browser.devtools.inspectedWindow.eval(`inspect(document.querySelector('${selector}'));`);
 }
 
 var wasOver = false;
