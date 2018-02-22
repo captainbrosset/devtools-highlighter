@@ -1,6 +1,6 @@
 # What is this?
 
-This is the code for a Firefox DevTools extension.
+This is the code for a browser DevTools extension that works in Firefox and Chrome.
 
 This extension adds a new panel to the toolbox. The panel allows users to search for nodes in the current page.
 
@@ -44,7 +44,7 @@ It is also possible to scroll elements into view or select them in the inspector
 
 # Browser support
 
-The extension has only been tested in Firefox, but uses WebExtension APIs, so in theory it should work in Chrome too.
+The code for this extension has been made compatible with Firefox and Chrome (it uses WebExtension APIs so should, in theory, work with any browser that has support for them). However, the extension has only been made available for installation via the Mozilla Add-On website (so for only Firefox only).
 
 # Helping!
 
@@ -62,6 +62,8 @@ This extension is written in JavaScript, with little bits of HTML and CSS, so yo
 
 There is absolutely no other pre-requisites or any other software to install. The only thing you will need is [the Firefox web browser](http://firefox.com), and at least version 57.
 
+We don't yet have documentation for working on the extension in the Google Chrome browser.
+
 ## Getting the code
 
 * [Fork this repository](https://help.github.com/articles/fork-a-repo/) on your own GitHub user account.
@@ -69,7 +71,7 @@ There is absolutely no other pre-requisites or any other software to install. Th
 
 That's it! You have the code now.
 
-## Running the extension locally
+## Running the extension locally in Firefox
 
 * Start Firefox.
 * In the URL bar, type `about:debugging`.
