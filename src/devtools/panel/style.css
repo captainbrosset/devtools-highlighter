@@ -138,9 +138,9 @@ body {
   color: var(--theme-highlight-blue);
 }
 
-#nodes .preview .node-name:not(:last-child),
-#nodes .preview .attribute:not(:last-child) {
-  margin-inline-end: .5em;
+#nodes .preview .attribute { margin-inline-start: .5em; }
+@supports not (margin-inline-start:test) {
+  #nodes .preview .attribute { margin-left: .5em; }
 }
 
 #nodes .preview .attribute .name {
