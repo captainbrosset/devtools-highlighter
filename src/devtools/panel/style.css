@@ -29,13 +29,12 @@ body {
   border-block-end: 1px solid var(--theme-splitter-color);
   display: grid;
   grid-template-columns: 30px 1fr auto auto auto;
-  position: relative;
 }
 
 .toolbar input {
   border: none;
   background: transparent;
-  outline: 0; /* Remove blue outline around inputs in Chrome */
+  outline: 0;
 }
 
 .toolbar label, .toolbar input {
