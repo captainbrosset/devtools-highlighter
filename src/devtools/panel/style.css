@@ -28,13 +28,13 @@ body {
   background: var(--theme-toolbar-background);
   border-block-end: 1px solid var(--theme-splitter-color);
   display: grid;
-  grid-template-columns: 30px 1fr auto auto;
-  position: relative;
+  grid-template-columns: 30px 1fr auto auto auto;
 }
 
 .toolbar input {
   border: none;
   background: transparent;
+  outline: 0;
 }
 
 .toolbar label, .toolbar input {
@@ -48,16 +48,12 @@ body {
 }
 
 .toolbar .count {
-  position: absolute;
   font-weight: bold;
   color: #666;
-  grid-column: 2 / 3;
-  width: 100%;
-  height: 100%;
-  justify-content: end;
+  grid-column: 3 / 4;
   align-items: center;
   display: flex;
-  right: 0.5em;
+  margin-right: 0.5em;
   pointer-events: none;
 }
 
