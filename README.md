@@ -106,7 +106,14 @@ That's it! Now if you open a new tab on any site, and open DevTools, you should 
 
 ## Making changes and reloading those changes in Chrome
 
-*this section needs some help*
+Same as with Firefox, if you make changes to the code and want to reload the extension, do the following:
+
+* Close DevTools.
+* Go back to the `chrome://extensions` tab.
+* Under where it says `devtools-highlighter` click on the little circular arrows button to reload the extension.
+* Go back to your test tab, reload it (so the content script is reloaded), and open DevTools again.
+
+That's it!
 
 ## Submitting code changes to this repository
 
