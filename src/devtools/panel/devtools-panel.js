@@ -27,9 +27,9 @@ const countEl = document.querySelector(".count");
 const clearButtonEl = document.querySelector(".clear");
 
 // Start listening for events in the panel, to handle user inputs.
-inputEl.addEventListener("input", findAndHighlight);
-unlimitedCheckboxEl.addEventListener("input", findAndHighlight);
-typeSelectEl.addEventListener("input", findAndHighlight);
+inputEl.addEventListener("input", find);
+unlimitedCheckboxEl.addEventListener("input", find);
+typeSelectEl.addEventListener("input", find);
 clearButtonEl.addEventListener("click", clear);
 window.addEventListener("click", handleButtonClick);
 window.addEventListener("mouseover", handleNodeOver);
@@ -37,9 +37,9 @@ window.addEventListener("mouseout", handleNodeOut);
 
 /**
  * Execute the current query by sending a message to the content script, which will find
- * all matching nodes and highlight them (or may send an error message back).
+ * all matching nodes (or may send an error message back).
  */
-function findAndHighlight() {
+function find() {
   let query = inputEl.value.trim();
   if (!query) {
     clear();
@@ -48,7 +48,7 @@ function findAndHighlight() {
 
   browser.runtime.sendMessage({
     tabId: browser.devtools.inspectedWindow.tabId,
-    action: "findAndHighlight",
+    action: "find",
     type: typeSelectEl.value,
     options: {
       unlimited: unlimitedCheckboxEl.checked
@@ -278,14 +278,14 @@ function handleNodeOver({ target }) {
 
   browser.runtime.sendMessage({
     tabId: browser.devtools.inspectedWindow.tabId,
-    action: "highlightOne",
+    action: "highlight",
     index
   });
 }
 
 /**
  * Handle a mouseout in the panel. Only process events on node previews in the output,
- * and use this event to re-highlight all nodes in the page.
+ * and use this event to un-highlight the node in the page.
  * @param {DOMEvent} event.
  */
 function handleNodeOut({ target }) {
@@ -296,12 +296,12 @@ function handleNodeOut({ target }) {
 
   browser.runtime.sendMessage({
     tabId: browser.devtools.inspectedWindow.tabId,
-    action: "highlightAll"
+    action: "unhighlight"
   });
 }
 
 /**
- * Clear the output and unhighlight everything.
+ * Clear the output.
  */
 function clear() {
   displayNodes([]);

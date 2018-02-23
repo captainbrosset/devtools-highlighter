@@ -20,14 +20,14 @@ const port = browser.runtime.connect({ name: "cs-port" });
 // Handle background script messages.
 port.onMessage.addListener(message => {
   switch (message.action) {
-    case "findAndHighlight":
-      findAndHighlight(message);
+    case "find":
+      find(message);
       break;
-    case "highlightOne":
-      highlightOne(message.index);
+    case "highlight":
+      highlight(message.index);
       break;
-    case "highlightAll":
-      reHighlightAll();
+    case "unhighlight":
+      unhighlightAll();
       break;
     case "scrollIntoView":
       scrollIntoView(message.index);
@@ -44,7 +44,7 @@ function sendResponse(message) {
 }
 
 // Keep track of all highlighted elements so we can un-highlight them later.
-let currentlyHighlighted = [];
+let currentNodes = [];
 
 /**
  * Clear all found nodes.
@@ -52,14 +52,14 @@ let currentlyHighlighted = [];
 function clear() {
   unhighlightAll();
   untagAll();
-  currentlyHighlighted = [];
+  currentNodes = [];
 }
 
 /**
  * Unhighlight all nodes at once, but keep the list so we can highlight them again later.
  */
 function unhighlightAll() {
-  for (let node of currentlyHighlighted) {
+  for (let node of currentNodes) {
     unhighlightNode(node);
   }
 }
@@ -69,53 +69,44 @@ function unhighlightAll() {
  * later.
  */
 function untagAll() {
-  for (let node of currentlyHighlighted) {
+  for (let node of currentNodes) {
     untagNode(node);
   }
 }
 
 /**
  * Highlight just one node. So, unhighlight all others, and highlight just this one.
- * @param {Number} index The index of the node in the currentlyHighlighted array.
+ * @param {Number} index The index of the node in the currentNodes array.
  */
-function highlightOne(index) {
-  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
+function highlight(index) {
+  if (!currentNodes || !currentNodes[index]) {
     return;
   }
 
   unhighlightAll();
-  highlightNode(currentlyHighlighted[index]);
-}
-
-/**
- * Highlight all known nodes again.
- */
-function reHighlightAll() {
-  for (let node of currentlyHighlighted) {
-    highlightNode(node);
-  }
+  highlightNode(currentNodes[index]);
 }
 
 /**
  * Scroll one of the known nodes into view.
- * @param {Number} index The index of the node in the currentlyHighlighted array.
+ * @param {Number} index The index of the node in the currentNodes array.
  */
 function scrollIntoView(index) {
-  if (!currentlyHighlighted || !currentlyHighlighted[index]) {
+  if (!currentNodes || !currentNodes[index]) {
     return;
   }
 
-  currentlyHighlighted[index].scrollIntoView({ behavior: "smooth" });
+  currentNodes[index].scrollIntoView({ behavior: "smooth" });
 }
 
 /**
- * Execute a query (of any supported type) to find nodes and then highlight them.
+ * Execute a query (of any supported type) to find nodes.
  * @param {Object} data The properties required here are:
  * - type {String} The type of query to run. Either computed or selector.
  * - query {String} The query itself
  * - options {Object} Options for executing the query, like unlimited {Boolean}
  */
-function findAndHighlight({ type, query, options }) {
+function find({ type, query, options }) {
   clear();
 
   let nodes = [];
@@ -136,9 +127,8 @@ function findAndHighlight({ type, query, options }) {
   }
 
   for (let node of nodes) {
-    highlightNode(node);
     tagNode(node);
-    currentlyHighlighted.push(node);
+    currentNodes.push(node);
   }
 
   let responseType = error ? "error" : "ok";
