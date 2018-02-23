@@ -331,7 +331,7 @@ function createNodeResponse(node) {
   return {
     nodeName: node.nodeName,
     attributes,
-    isHidden: !node.getBoxQuads || !node.getBoxQuads().length,
+    isHidden: !node.getClientRects || !node.getClientRects().length,
     uniqueSelector
   };
 }
