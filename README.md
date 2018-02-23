@@ -82,7 +82,7 @@ That's it! You have the code now.
 
 That's it! Now if you open a new tab on any site, and open DevTools, you should see the extension in the toolbox.
 
-## Making changes and reloading those changes
+## Making changes and reloading those changes in Firefox
 
 Now that you are set up with the development environment, you can start making changes to the code. To see those changes appear in Firefox, you will need to do the following:
 
@@ -92,6 +92,21 @@ Now that you are set up with the development environment, you can start making c
 * Go back to your test tab, reload it (so the content script is reloaded), and open DevTools again.
 
 That's it! You should now see your changes.
+
+## Running the extension locally in Chrome
+
+* Start Chrome.
+* In the URL bar, type `chrome://extensions`.
+* Switch the developer mode ON.
+* Click on the `Load unpacked extension` button.
+* A file explorer window should appear, in it, navigate to where you created the clone of the code.
+* Select the `src/manifest.json` file and open.
+
+That's it! Now if you open a new tab on any site, and open DevTools, you should see the extension in the toolbox.
+
+## Making changes and reloading those changes in Chrome
+
+*this section needs some help*
 
 ## Submitting code changes to this repository
 
