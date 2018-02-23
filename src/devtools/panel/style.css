@@ -31,6 +31,10 @@ body {
   grid-template-columns: 30px 1fr auto auto auto;
 }
 
+@supports not (border-block-end:test) {
+  .toolbar { border-bottom: 1px solid var(--theme-splitter-color); }
+}
+
 .toolbar input {
   border: none;
   background: transparent;
@@ -63,7 +67,11 @@ body {
   background-repeat: no-repeat;
   border: 0;
   color: transparent;
-  border-inline-end: 1px solid var(--theme-splitter-color);;
+  border-inline-end: 1px solid var(--theme-splitter-color);
+}
+
+@supports not (border-inline-end:test) {
+  .toolbar .clear { border-right: 1px solid var(--theme-splitter-color); }
 }
 
 .output {
@@ -101,6 +109,10 @@ body {
   align-items: center;
   cursor: default;
   overflow: hidden;
+}
+
+@supports not (border-block-end:test) {
+  #nodes li { border-bottom: 1px solid var(--theme-splitter-color); }
 }
 
 #nodes li:hover {
