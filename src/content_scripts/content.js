@@ -13,6 +13,8 @@ const NODE_LIMIT = 100;
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
 const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
+let outlineColor = "#f06";
+
 // Open the port to communicate with the background script.
 const browser = window.browser || chrome;
 const port = browser.runtime.connect({ name: "cs-port" });
@@ -35,8 +37,15 @@ port.onMessage.addListener(message => {
     case "clear":
       clear();
       break;
+    case "updateOutlineColor":
+      updateOutlineColor(message.options.color);
+      break;
   }
 });
+
+function updateOutlineColor(color) {
+  outlineColor = color;
+}
 
 // Helper to send messages back to the background script.
 function sendResponse(message) {
@@ -272,6 +281,7 @@ let nextUnique = (function uniqueNumberGenerator() {
  */
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
+  node.style.outline = `1px solid ${outlineColor}`
 }
 
 /**
@@ -288,6 +298,7 @@ function tagNode(node) {
  */
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
+  node.style.outline = "none";
 }
 
 /**
