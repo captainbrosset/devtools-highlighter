@@ -13,6 +13,8 @@ const NODE_LIMIT = 100;
 const STYLING_ATTRIBUTE = "__devtools_highlighted";
 const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
+// Global var to store the outline color
+// used for highlighting elements
 let outlineColor = "#f06";
 
 // Open the port to communicate with the background script.
@@ -43,6 +45,9 @@ port.onMessage.addListener(message => {
   }
 });
 
+/**
+ * Updates the global `outlineColor` variable with the new color
+ */
 function updateOutlineColor(color) {
   outlineColor = color;
 }
@@ -281,6 +286,14 @@ let nextUnique = (function uniqueNumberGenerator() {
  */
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
+  updateOutline(node);
+}
+
+/**
+ * Update the outline of the node
+ * @param {DOMNode} node  The node whose outline needs to be updated 
+ */
+function updateOutline(node) {
   node.style.outline = `2px solid ${outlineColor}`
 }
 
@@ -298,6 +311,14 @@ function tagNode(node) {
  */
 function unhighlightNode(node) {
   node.removeAttribute(STYLING_ATTRIBUTE);
+  resetOutline(node);
+}
+
+/**
+ * Removes the outline from the node
+ * @param {DOMNode} node  The node whose outline has to be removed 
+ */
+function resetOutline(node) {
   node.style.outline = "none";
 }
 
