@@ -37,6 +37,10 @@ window.addEventListener("mouseover", handleNodeOver);
 window.addEventListener("mouseout", handleNodeOut);
 outlineColorSelectorEl.addEventListener("input", updateOutlineColor);
 
+/**
+ * Notifies the content script to update the color
+ * when the user selects a new color
+ */
 function updateOutlineColor() {
   browser.runtime.sendMessage({
     tabId: browser.devtools.inspectedWindow.tabId,
