@@ -281,7 +281,7 @@ let nextUnique = (function uniqueNumberGenerator() {
  */
 function highlightNode(node) {
   node.setAttribute(STYLING_ATTRIBUTE, true);
-  node.style.outline = `1px solid ${outlineColor}`
+  node.style.outline = `2px solid ${outlineColor}`
 }
 
 /**
