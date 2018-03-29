@@ -28,7 +28,7 @@ body {
   background: var(--theme-toolbar-background);
   border-block-end: 1px solid var(--theme-splitter-color);
   display: grid;
-  grid-template-columns: 30px 1fr auto auto auto;
+  grid-template-columns: 30px 1fr auto auto auto auto;
 }
 
 @supports not (border-block-end:test) {
@@ -68,6 +68,10 @@ body {
   border: 0;
   color: transparent;
   border-inline-end: 1px solid var(--theme-splitter-color);
+}
+
+.toolbar #color-selector {
+  cursor: pointer;
 }
 
 @supports not (border-inline-end:test) {
