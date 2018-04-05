@@ -25,7 +25,6 @@ const outputEl = document.querySelector(".output");
 const nodeListEl = document.querySelector("#nodes");
 const countEl = document.querySelector(".count");
 const clearButtonEl = document.querySelector(".clear");
-const outlineColorSelectorEl = document.querySelector("#color-selector")
 
 // Start listening for events in the panel, to handle user inputs.
 inputEl.addEventListener("input", find);
@@ -35,21 +34,6 @@ clearButtonEl.addEventListener("click", clear);
 window.addEventListener("click", handleButtonClick);
 window.addEventListener("mouseover", handleNodeOver);
 window.addEventListener("mouseout", handleNodeOut);
-outlineColorSelectorEl.addEventListener("input", updateOutlineColor);
-
-/**
- * Notifies the content script to update the color
- * when the user selects a new color
- */
-function updateOutlineColor() {
-  browser.runtime.sendMessage({
-    tabId: browser.devtools.inspectedWindow.tabId,
-    action: "updateOutlineColor",
-    options: {
-      color: outlineColorSelectorEl.value
-    },
-  });
-}
 
 /**
  * Execute the current query by sending a message to the content script, which will find
