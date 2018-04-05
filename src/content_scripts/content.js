@@ -290,16 +290,16 @@ function highlightNode(node) {
     width: ${width}px;
     height: ${height}px;`;
     
-  let highlightLayer;
-  if (!(highlightLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`))) {
+  let highlighterLayer;
+  if (!(highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`))) {
     const body = document.querySelector('body');    
-    highlightLayer = document.createElement('div');
-    highlightLayer.setAttribute('id', HIGHLIGHTER_LAYER_ID);
-    body.appendChild(highlightLayer);
+    highlighterLayer = document.createElement('div');
+    highlighterLayer.setAttribute('id', HIGHLIGHTER_LAYER_ID);
+    body.appendChild(highlighterLayer);
   } else {
-    highlightLayer.classList.remove('hide');
+    highlighterLayer.classList.remove('hide');
   }
-  highlightLayer.setAttribute('style', styles);  
+  highlighterLayer.setAttribute('style', styles);
 }
 
 
