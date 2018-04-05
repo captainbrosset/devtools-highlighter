@@ -37,18 +37,8 @@ port.onMessage.addListener(message => {
     case "clear":
       clear();
       break;
-    case "updateOutlineColor":
-      updateOutlineColor(message.options.color);
-      break;
   }
 });
-
-/**
- * Updates the global `outlineColor` variable with the new color
- */
-function updateOutlineColor(color) {
-  outlineColor = color;
-}
 
 // Helper to send messages back to the background script.
 function sendResponse(message) {
@@ -283,7 +273,7 @@ let nextUnique = (function uniqueNumberGenerator() {
  * @param {DOMNode} node The node to be highlighted.
  */
 function highlightNode(node) {
-  const {top, left, width, height} = node.getBoundingClientRect()
+  const {top, left, width, height} = node.getBoundingClientRect();
   const styles = ` 
     top: ${top}px;
     left: ${left}px;
