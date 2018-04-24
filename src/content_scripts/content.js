@@ -273,7 +273,8 @@ let nextUnique = (function uniqueNumberGenerator() {
  * @param {DOMNode} node The node to be highlighted.
  */
 function highlightNode(node) {
-  const {top, left, width, height} = node.getBoundingClientRect();
+  const {width, height} = node.getBoundingClientRect();
+  const {top, left} = getNodeAbsoluteCoordinates(node);
   const styles = `
     top: ${top}px;
     left: ${left}px;
@@ -284,6 +285,20 @@ function highlightNode(node) {
   highlighterLayer.classList.remove('hide');
   highlighterLayer.setAttribute('style', styles);
 }
+
+/**
+ * Calculates the coordinates of the node relative to the document/window
+ * @param {DOMNode} node, whose coordinates are to be calculated
+ * @returns {Object} containing the top and left coordinates of the node relative to the document
+ */
+function getNodeAbsoluteCoordinates(node) {
+  const {top, left} = node.getBoundingClientRect();
+  return {
+    top: top + window.pageYOffset,
+    left: left + window.pageXOffset
+  }
+}
+
 /**
  * Returns the current highlighter layer
  * Create and add one if doesn't exists
