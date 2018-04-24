@@ -61,8 +61,8 @@ function clear() {
  * Unhighlight all nodes at once, but keep the list so we can highlight them again later.
  */
 function unhighlightAll() {
-  let highlighterLayer;
-  if (highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`)) {
+  let highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`);
+  if (highlighterLayer) {
     highlighterLayer.classList.add('hide');
   }
 }
@@ -274,22 +274,31 @@ let nextUnique = (function uniqueNumberGenerator() {
  */
 function highlightNode(node) {
   const {top, left, width, height} = node.getBoundingClientRect();
-  const styles = ` 
+  const styles = `
     top: ${top}px;
     left: ${left}px;
     width: ${width}px;
     height: ${height}px;`;
-    
-  let highlighterLayer;
-  if (!(highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`))) {
-    const body = document.querySelector('body');    
-    highlighterLayer = document.createElement('div');
-    highlighterLayer.setAttribute('id', HIGHLIGHTER_LAYER_ID);
-    body.appendChild(highlighterLayer);
-  } else {
-    highlighterLayer.classList.remove('hide');
-  }
+
+  let highlighterLayer = getHighlighterLayer();
+  highlighterLayer.classList.remove('hide');
   highlighterLayer.setAttribute('style', styles);
+}
+/**
+ * Returns the current highlighter layer
+ * Create and add one if doesn't exists
+ * @returns {DOMNode} node representing the highlighter layer
+ */
+function getHighlighterLayer() {
+  let highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`);
+  if (highlighterLayer) {
+    return highlighterLayer;
+  }
+
+  highlighterLayer = document.createElement('div');
+  highlighterLayer.setAttribute('id', HIGHLIGHTER_LAYER_ID);
+  document.body.appendChild(highlighterLayer);
+  return highlighterLayer;
 }
 
 
