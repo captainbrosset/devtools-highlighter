@@ -10,12 +10,10 @@ const NODE_LIMIT = 100;
 
 // Special attributes used by the extension. These attributes are added to nodes in the
 // page.
-const STYLING_ATTRIBUTE = "__devtools_highlighted";
 const UNIQUE_ATTRIBUTE = "__devtools_unique";
 
-// Global var to store the outline color
-// used for highlighting elements
-let outlineColor = "#f06";
+// Id of the higlighter layer used to highlight the node
+const HIGHLIGHTER_LAYER_ID = "__devtools_highlighter";
 
 // Open the port to communicate with the background script.
 const browser = window.browser || chrome;
@@ -39,18 +37,8 @@ port.onMessage.addListener(message => {
     case "clear":
       clear();
       break;
-    case "updateOutlineColor":
-      updateOutlineColor(message.options.color);
-      break;
   }
 });
-
-/**
- * Updates the global `outlineColor` variable with the new color
- */
-function updateOutlineColor(color) {
-  outlineColor = color;
-}
 
 // Helper to send messages back to the background script.
 function sendResponse(message) {
@@ -73,8 +61,9 @@ function clear() {
  * Unhighlight all nodes at once, but keep the list so we can highlight them again later.
  */
 function unhighlightAll() {
-  for (let node of currentNodes) {
-    unhighlightNode(node);
+  let highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`);
+  if (highlighterLayer) {
+    highlighterLayer.classList.add('hide');
   }
 }
 
@@ -97,7 +86,6 @@ function highlight(index) {
     return;
   }
 
-  unhighlightAll();
   highlightNode(currentNodes[index]);
 }
 
@@ -285,17 +273,49 @@ let nextUnique = (function uniqueNumberGenerator() {
  * @param {DOMNode} node The node to be highlighted.
  */
 function highlightNode(node) {
-  node.setAttribute(STYLING_ATTRIBUTE, true);
-  updateOutline(node);
+  const {width, height} = node.getBoundingClientRect();
+  const {top, left} = getNodeAbsoluteCoordinates(node);
+  const styles = `
+    top: ${top}px;
+    left: ${left}px;
+    width: ${width}px;
+    height: ${height}px;`;
+
+  let highlighterLayer = getHighlighterLayer();
+  highlighterLayer.classList.remove('hide');
+  highlighterLayer.setAttribute('style', styles);
 }
 
 /**
- * Update the outline of the node
- * @param {DOMNode} node  The node whose outline needs to be updated 
+ * Calculates the coordinates of the node relative to the document/window
+ * @param {DOMNode} node, whose coordinates are to be calculated
+ * @returns {Object} containing the top and left coordinates of the node relative to the document
  */
-function updateOutline(node) {
-  node.style.outline = `2px solid ${outlineColor}`
+function getNodeAbsoluteCoordinates(node) {
+  const {top, left} = node.getBoundingClientRect();
+  return {
+    top: top + window.pageYOffset,
+    left: left + window.pageXOffset
+  }
 }
+
+/**
+ * Returns the current highlighter layer
+ * Create and add one if doesn't exists
+ * @returns {DOMNode} node representing the highlighter layer
+ */
+function getHighlighterLayer() {
+  let highlighterLayer = document.querySelector(`#${HIGHLIGHTER_LAYER_ID}`);
+  if (highlighterLayer) {
+    return highlighterLayer;
+  }
+
+  highlighterLayer = document.createElement('div');
+  highlighterLayer.setAttribute('id', HIGHLIGHTER_LAYER_ID);
+  document.body.appendChild(highlighterLayer);
+  return highlighterLayer;
+}
+
 
 /**
  * Tag one node in the page, so we can then select it in the inspector.
@@ -305,22 +325,6 @@ function tagNode(node) {
   node.setAttribute(UNIQUE_ATTRIBUTE, nextUnique());
 }
 
-/**
- * Unhighlight one node in the page.
- * @param {DOMNode} node The node to be unhighlighted.
- */
-function unhighlightNode(node) {
-  node.removeAttribute(STYLING_ATTRIBUTE);
-  resetOutline(node);
-}
-
-/**
- * Removes the outline from the node
- * @param {DOMNode} node  The node whose outline has to be removed 
- */
-function resetOutline(node) {
-  node.style.outline = "none";
-}
 
 /**
  * Untag one node in the page.
@@ -347,7 +351,7 @@ function createNodeResponse(node) {
 
   // Filtering the attributes to remove the special ones the extension is adding.
   attributes = attributes.filter(({ name }) => {
-    return name !== UNIQUE_ATTRIBUTE && name !== STYLING_ATTRIBUTE;
+    return name !== UNIQUE_ATTRIBUTE;
   });
 
   return {
